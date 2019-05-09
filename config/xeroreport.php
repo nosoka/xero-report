@@ -11,8 +11,8 @@ return [
             // For certs on disk or a string
             // allows anything that is valid with openssl_pkey_get_(private|public)
             // ref: https://developer.xero.com/documentation/api-guides/create-publicprivate-key
-            'rsa_private_key' => 'file://certs/privatekey.pem',
-            'rsa_public_key'  => 'file://certs/publickey.cer',
+            'rsa_private_key' => 'file://storage/app/certs/privatekey.pem',
+            'rsa_public_key'  => 'file://storage/app/certs/publickey.cer',
 
         ],
     ],

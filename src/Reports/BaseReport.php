@@ -10,7 +10,7 @@ class BaseReport
 
     private $slackChannel = null;
 
-    public function routeNotificationForSlack($notification)
+    public function routeNotificationForSlack()
     {
         // TODO:: report error if param is not initialized
         return config('xeroreport.notifications.slack.webhook_url');

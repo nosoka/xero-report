@@ -4,15 +4,15 @@
     "description": "A laravel package to generate xero reports and send it as a slack notification",
     "homepage": "https://github.com/pasok/xero-report",
     "license": "MIT",
-    "version": "dev-master",
+    "version": "1.0.0",
 
     "require": {
         "php": "^7.1",
         "calcinai/xero-php": "^1.8",
-        "illuminate/console": "~5.5.0|~5.6.0|~5.7.0|~5.8.0",
-        "illuminate/notifications": "~5.5.0|~5.6.0|~5.7.0|~5.8.0",
-        "laravel/slack-notification-channel": "~1.0.0|2.0.0",
-        "tightenco/collect": "~5.5.0|~5.6.0|~5.7.0|~5.8.0"
+        "guzzlehttp/guzzle": "^6.3",
+        "illuminate/console": "~5.5.0|~5.6.0|~5.7.0",
+        "illuminate/notifications": "~5.5.0|~5.6.0|~5.7.0",
+        "illuminate/support": "~5.5.0|~5.6.0|~5.7.0"
     },
     "autoload": {
         "psr-4": {
