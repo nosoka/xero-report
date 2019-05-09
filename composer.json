@@ -4,7 +4,7 @@
     "description": "A laravel package to generate xero reports and send it as a slack notification",
     "homepage": "https://github.com/pasok/xero-report",
     "license": "MIT",
-    "version": "1.0.0",
+    "version": "1.0.1",
 
     "require": {
         "php": "^7.1",

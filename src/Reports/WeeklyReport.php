@@ -12,7 +12,9 @@ class WeeklyReport extends BaseReport
 {
     public function __construct()
     {
-        // TODO:: validate config params, catch exceptions
+        $this->validateConfig();
+        if (! empty($this->getErrors())) { return $this; }
+
         $this->xero = new XeroApp(config('xeroreport.xero'));
         $this->invoices = $this->getInvoicesModifiedSinceStartOfLastMonth();
         $this->purchaseOrders = $this->getPurchaseOrdersWaitingToBeApproved();
@@ -20,6 +22,8 @@ class WeeklyReport extends BaseReport
 
     public function generate()
     {
+        if (! empty($this->getErrors())) { return $this; }
+
         $this->generateFullReport();
         $this->generatePartialReport();
     }
@@ -32,8 +36,13 @@ class WeeklyReport extends BaseReport
         $fullReport .= $this->prepareOverDueInvoicesSection($this->invoices);
         $fullReport .= $this->prepareSubmittedPurchaseOrdersSection($this->purchaseOrders);
 
-        $this->setSlackChannel(config('xeroreport.notifications.slack.channel.full_report'))
-            ->notify(new ReportCreated($fullReport));
+        try {
+            $this->setSlackChannel(config('xeroreport.notifications.slack.channel.full_report'))
+                ->notify(new ReportCreated($fullReport));
+        } catch (\Exception $e){
+            $this->addToErrors("slack error :: failed to send full report :: {$e->getMessage()}");
+            return;
+        }
     }
 
     public function generatePartialReport()
@@ -42,8 +51,13 @@ class WeeklyReport extends BaseReport
         $partialReport .= $this->prepareIssuedInvoicesSection($this->invoices);
         $partialReport .= $this->prepareSubmittedPurchaseOrdersSection($this->purchaseOrders);
 
-        $this->setSlackChannel(config('xeroreport.notifications.slack.channel.partial_report'))
-            ->notify(new ReportCreated($partialReport));
+        try {
+            $this->setSlackChannel(config('xeroreport.notifications.slack.channel.partial_report'))
+                ->notify(new ReportCreated($partialReport));
+        } catch (\Exception $e){
+            $this->addToErrors("slack error :: failed to send partial report ::{$e->getMessage()}");
+            return;
+        }
     }
 
     public function prepareIssuedInvoicesSection($invoices)
@@ -139,7 +153,7 @@ class WeeklyReport extends BaseReport
 
     public function getInvoicesModifiedSinceStartOfLastMonth()
     {
-        $startofLastMonth    = Carbon::now()->submonths(1)->startOfMonth();
+        $startofLastMonth = Carbon::now()->submonths(1)->startOfMonth();
 
         return $this->getInvoicesModifiedSinceDate($startofLastMonth);
     }
@@ -147,32 +161,26 @@ class WeeklyReport extends BaseReport
     public function getInvoicesModifiedSinceDate($date = null)
     {
         // TODO:: if api returns 100 items, fetch the next page and add to list
-        // TODO:: catch errors/exceptions
-        return $this->xero->load(Invoice::class)
-            ->where("Date >= DateTime({$date->format('Y, m, d')})")
-            ->orWhere("AmountDue > 0")
-            ->page(1)
-            ->execute();
+        try {
+            return $this->xero->load(Invoice::class)
+                ->where("Date >= DateTime({$date->format('Y, m, d')})")
+                ->orWhere("AmountDue > 0")
+                ->execute();
+        } catch (\Exception $e){
+            $this->addToErrors("xero error :: Failed to retrieve invoices :: {$e->getMessage()}");
+        }
     }
 
     public function getPurchaseOrdersWaitingToBeApproved()
     {
         // TODO:: if api returns 100 items, fetch the next page and add to list
-        // TODO:: catch errors/exceptions
-        return $this->xero->load(PurchaseOrder::class)
-            ->setParameter('status', 'SUBMITTED')
-            ->orderBy('Date')
-            ->execute();
-    }
-
-    public function kFormat($number = null)
-    {
-        if ($number > 999 && $number <= 999999) {
-            return round($number / 1000, 1) . 'k';
+        try {
+            return $this->xero->load(PurchaseOrder::class)
+                ->setParameter('status', 'SUBMITTED')
+                ->orderBy('Date')
+                ->execute();
+        } catch (\Exception $e){
+            $this->addToErrors("xero error :: Failed to retrieve purchase orders :: {$e->getMessage()}");
         }
-        if ($number > 999999) {
-            return number_format((float)$number , 1, '.', '')/1000000 . 'm';
-        }
-        return $number;
     }
 }

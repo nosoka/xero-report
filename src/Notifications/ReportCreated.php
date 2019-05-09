@@ -24,14 +24,8 @@ class ReportCreated extends Notification
 
     public function toSlack($notifiable)
     {
-        //TODO:: validate config params, catch exceptions
         $slack = (object) config('xeroreport.notifications.slack');
-
-        if (!is_null($notifiable->getSlackChannel())) {
-            $slack->channelName = $notifiable->getSlackChannel();
-        } else {
-            $slack->channelName = $slack->channel['default'];
-        }
+        $slack->channelName = !empty($notifiable->getSlackChannel()) ? $notifiable->getSlackChannel() : $slack->channel['default'];
 
         return (new SlackMessage)
             ->success()

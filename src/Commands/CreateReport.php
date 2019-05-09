@@ -21,13 +21,16 @@ class CreateReport extends Command
      */
     protected $description = 'Generate Xero Report';
 
+    private $report;
+
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(WeeklyReport $report)
     {
+        $this->report = $report;
         parent::__construct();
     }
 
@@ -38,6 +41,12 @@ class CreateReport extends Command
      */
     public function handle()
     {
-        (new WeeklyReport)->generate();
+        $this->report->generate();
+
+        if (! empty($this->report->getErrors())) {
+            foreach($this->report->getErrors() as $error) {
+                echo "{$error}\n";
+            }
+        }
     }
 }
